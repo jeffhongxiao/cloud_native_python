@@ -118,6 +118,35 @@ def add_user(new_user):
     # return jsonify({})
 
 
+@app.route('/api/v1/users', methods=['DELETE'])
+def delete_user():
+    if not request.json:
+        abort(400)
+    if not 'username' in request.json:
+        abort(400)
+
+    username = request.json['username']
+    return jsonify({'status': del_user(username)}), 200
+
+
+def del_user(username):
+    conn = sqlite3.connect('mydb.db')
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * from users WHERE username=?', (username,))
+
+    data = cursor.fetchall()
+
+    if len(data) == 0:
+        abort(404)
+
+    cursor.execute('DELETE FROM users WHERE username==?', (username,))
+    conn.commit()
+    conn.close()
+
+    return 'Success'
+
+
 @app.errorhandler(400)
 def invalid_request(error):
     return make_response(jsonify({'error': 'Bad Request'}), 400)
