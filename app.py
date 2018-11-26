@@ -1,6 +1,6 @@
 import sqlite3
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort, make_response
 
 app = Flask(__name__)
 
@@ -61,17 +61,22 @@ def list_user(user_id):
     data = cursor.fetchall()
 
     if len(data) == 0:
-        conn.close()
-        return jsonify({})
+        abort(404)
+    else:
+        user = {}
+        user['username'] = data[0][0]
+        user['name'] = data[0][1]
+        user['email'] = data[0][2]
+        user['password'] = data[0][3]
+        user['id'] = data[0][4]
 
-    user = {}
-    user['username'] = data[0][0]
-    user['name'] = data[0][1]
-    user['email'] = data[0][2]
-    user['password'] = data[0][3]
-    user['id'] = data[0][4]
     conn.close()
     return jsonify(user)
+
+
+@app.errorhandler(404)
+def resource_not_found(error):
+    return make_response(jsonify({'error': 'Resource not found!'}), 404)
 
 
 if __name__ == "__main__":
