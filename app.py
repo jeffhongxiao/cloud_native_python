@@ -56,7 +56,8 @@ def get_user(user_id):
 def list_user(user_id):
     conn = sqlite3.connect('mydb.db')
     cursor = conn.execute(
-        'SELECT * from users where id=?', (user_id,)
+        'SELECT username, full_name, email, password, id from users where id=?', (
+            user_id,)
     )
     data = cursor.fetchall()
 
@@ -72,6 +73,59 @@ def list_user(user_id):
 
     conn.close()
     return jsonify(user)
+
+
+@app.route('/api/v1/users', methods=['POST'])
+def create_user():
+    if not request.json:
+        abort(400)
+    if not 'username' in request.json:
+        abort(400)
+    if not 'email' in request.json:
+        abort(400)
+    if not 'password' in request.json:
+        abort(400)
+
+    user = {
+        'username': request.json['username'],
+        'email': request.json['email'],
+        'name': request.json.get('name', ''),
+        'password': request.json['password']
+    }
+
+    return jsonify({'status': add_user(user)}), 201
+
+
+def add_user(new_user):
+    conn = sqlite3.connect('mydb.db')
+
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT * from users where username=? or email=?',
+                   (new_user['username'], new_user['email']))
+
+    data = cursor.fetchall()
+
+    if len(data) != 0:
+        abort(409)
+
+    cursor.execute('INSERT INTO users (username, email, password, full_name) values (?,?,?,?)',
+                   (new_user['username'], new_user['email'], new_user['password'], new_user['name']))
+    conn.commit()
+    conn.close()
+
+    return 'Success'
+    # return jsonify({})
+
+
+@app.errorhandler(400)
+def invalid_request(error):
+    return make_response(jsonify({'error': 'Bad Request'}), 400)
+
+
+@app.errorhandler(409)
+def user_found(error):
+    return make_response(jsonify({'error': 'Conflict! Record exist'}), 409)
 
 
 @app.errorhandler(404)
