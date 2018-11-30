@@ -10,8 +10,15 @@ CREATE TABLE apirelease(
 INSERT INTO apirelease values(
     "2017-01-01 10:00:00",
     "v1",
-    "/api/v1/users/",
+    "/api/v1/users",
     "get, post, put, delete"
+);
+
+INSERT INTO apirelease values(
+    "2017-01-02 10:00:00",
+    "v2",
+    "/api/v2/tweets",
+    "get, post"
 );
 
 
@@ -30,4 +37,13 @@ INSERT INTO users values(
     '123456',
     'Hong Xiao',
     1
-)
+);
+
+
+---- tweets ----
+CREATE TABLE tweets(
+   username varchar2(30),
+   body varchar2(30),
+   tweet_time date,
+   id integer primary key autoincrement
+);

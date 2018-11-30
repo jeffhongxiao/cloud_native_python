@@ -181,6 +181,28 @@ def upd_user(user):
     conn.commit()
     return 'Success'
 
+@app.route('/api/v2/tweets', methods=['GET'])
+def get_tweets():
+    print('get_tweets()')
+    return list_tweets()
+
+def list_tweets():
+    conn = sqlite3.connect('mydb.db')
+    api_list = []
+
+    cursor = conn.execute('SELECT username, body, tweet_time, id FROM tweets')
+    data = cursor.fetchall()
+    
+    for row in data:
+        tweet = {}
+        tweet['Tweet by'] = row[0]
+        tweet['Body'] = row[1]
+        tweet['Timestamp'] = row[2]
+        tweet['id'] = row[3]
+        api_list.append(tweet)
+
+    conn.close()
+    return jsonify({'tweet_list': api_list})
 
 @app.errorhandler(400)
 def invalid_request(error):
